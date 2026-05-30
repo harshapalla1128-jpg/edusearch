@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model College {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  location    String
+  city        String
+  state       String
+  type        CollegeType
+  rating      Float
+  totalFees   Int
+  established Int
+  overview    String
+  naacGrade   String?
+  nirfRank    Int?
+  courses     Course[]
+  placements  Placement[]
+  reviews     Review[]
+  rankCutoffs RankCutoff[]
+  createdAt   DateTime    @default(now())
+  questions  Question[]
+  savedBy    SavedCollege[]
+}
+
+model Course {
+  id        String  @id @default(cuid())
+  college   College @relation(fields: [collegeId], references: [id])
+  collegeId String
+  name      String
+  duration  Int
+  fees      Int
+  seats     Int
+  degree    String
+}
+
+model Placement {
+  id             String   @id @default(cuid())
+  college        College  @relation(fields: [collegeId], references: [id])
+  collegeId      String
+  year           Int
+  averagePackage Int
+  highestPackage Int
+  placementRate  Float
+  topRecruiters  String[]
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  college    College  @relation(fields: [collegeId], references: [id])
+  collegeId  String
+  authorName String
+  batch      Int
+  rating     Float
+  title      String
+  body       String
+  pros       String
+  cons       String
+  createdAt  DateTime @default(now())
+}
+
+model RankCutoff {
+  id        String  @id @default(cuid())
+  college   College @relation(fields: [collegeId], references: [id])
+  collegeId String
+  exam      Exam
+  category  String
+  rankMin   Int
+  rankMax   Int
+  course    String
+  year      Int
+}
+
+enum CollegeType {
+  IIT
+  NIT
+  IIIT
+  DEEMED
+  PRIVATE
+  GOVERNMENT
+ 
+}
+
+enum Exam {
+  JEE_MAIN
+  JEE_ADVANCED
+  CAT
+  NEET
+  GATE
+  XAT
+}
+model Question {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  author    String
+  college   College? @relation(fields: [collegeId], references: [id])
+  collegeId String?
+  answers   Answer[]
+  createdAt DateTime @default(now())
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  body       String
+  author     String
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  createdAt  DateTime @default(now())
+}
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?
+  savedColleges SavedCollege[]
+  createdAt     DateTime  @default(now())
+}
+
+model SavedCollege {
+  id        String  @id @default(cuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  college   College @relation(fields: [collegeId], references: [id])
+  collegeId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, collegeId])
+}
